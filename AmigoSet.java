@@ -1,5 +1,8 @@
 package com.javarush.task.task37.task3707;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.*;
 
@@ -68,5 +71,18 @@ public class AmigoSet<E> extends AbstractSet<E> implements Serializable, Cloneab
         } catch (Exception e) {
             throw new InternalError(e);
         }
+    }
+
+    private final void writeObject(ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+        out.writeObject(map);
+        out.writeObject(HashMapReflectionHelper.callHiddenMethod(map, "capacity"));
+        out.writeObject(HashMapReflectionHelper.callHiddenMethod(map, "loadFactor"));
+    }
+
+    private final void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        HashMap<E, Object> map = new HashMap<>();
+        AmigoSet<E> newAmigoSet = (AmigoSet<E>) in.readObject();
     }
 }
