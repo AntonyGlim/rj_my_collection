@@ -1,9 +1,6 @@
 package com.javarush.task.task37.task3707;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.util.*;
 
 public class AmigoSet<E> extends AbstractSet<E> implements Serializable, Cloneable, Set<E> {
@@ -75,14 +72,40 @@ public class AmigoSet<E> extends AbstractSet<E> implements Serializable, Cloneab
 
     private final void writeObject(ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
-        out.writeObject(map);
-        out.writeObject(HashMapReflectionHelper.callHiddenMethod(map, "capacity"));
-        out.writeObject(HashMapReflectionHelper.callHiddenMethod(map, "loadFactor"));
+
+        out.writeInt(HashMapReflectionHelper.callHiddenMethod(map, "capacity"));
+        out.writeFloat(HashMapReflectionHelper.callHiddenMethod(map, "loadFactor"));
+        out.writeInt(map.size());
+
+        for (Map.Entry entry : map.entrySet()) {
+            out.writeObject(entry.getKey());
+        }
     }
 
     private final void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        HashMap<E, Object> map = new HashMap<>();
-        AmigoSet<E> newAmigoSet = (AmigoSet<E>) in.readObject();
+        HashMap<E, Object> map = new HashMap<>(in.readInt(), in.readFloat());
+        int size = in.readInt();
+        for (int i = 0; i < size; i++) {
+            map.put((E) in.readObject(), PRESENT);
+        }
+    }
+
+    public static void main(String[] args) throws IOException, ClassNotFoundException { //TODO DELETE THIS
+        HashSet<String> hashSet = new HashSet<>();
+        hashSet.add("ddd");
+        hashSet.add("rrrr");
+        AmigoSet amigoSet = new AmigoSet(hashSet);
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+        objectOutputStream.writeObject(amigoSet);
+        objectOutputStream.close();
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+        ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
+        AmigoSet amigoSet1 = (AmigoSet)  objectInputStream.readObject();
+//        System.out.println(amigoSet.equals(amigoSet1));
+        System.out.println(amigoSet);
+        System.out.println("________");
+        System.out.println(amigoSet1);
     }
 }
