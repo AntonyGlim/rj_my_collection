@@ -78,34 +78,40 @@ public class AmigoSet<E> extends AbstractSet<E> implements Serializable, Cloneab
         out.writeInt(map.size());
 
         for (Map.Entry entry : map.entrySet()) {
-            out.writeObject(entry.getKey());
+            E element = (E) entry.getKey();
+            out.writeObject(element);
+            System.out.println("writeObject" + element);
         }
+        out.flush();
     }
 
     private final void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        HashMap<E, Object> map = new HashMap<>(in.readInt(), in.readFloat());
+        map = new HashMap<>(in.readInt(), in.readFloat());
         int size = in.readInt();
         for (int i = 0; i < size; i++) {
-            map.put((E) in.readObject(), PRESENT);
+            E element = (E) in.readObject();
+            map.put(element, PRESENT);
+            System.out.println("readObject" + element);
         }
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException { //TODO DELETE THIS
-        HashSet<String> hashSet = new HashSet<>();
-        hashSet.add("ddd");
-        hashSet.add("rrrr");
-        AmigoSet amigoSet = new AmigoSet(hashSet);
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-        objectOutputStream.writeObject(amigoSet);
-        objectOutputStream.close();
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-        ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
-        AmigoSet amigoSet1 = (AmigoSet)  objectInputStream.readObject();
+
+        AmigoSet<String> stringAmigoSet = new AmigoSet<>();
+        stringAmigoSet.add("111111");
+        stringAmigoSet.add("222222");
+
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream("amigoSet.bin"));
+        objectOutputStream.writeObject(stringAmigoSet);
+
+        ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream("amigoSet.bin"));
+        AmigoSet stringAmigoSetCopy = (AmigoSet) objectInputStream.readObject();
+
+
 //        System.out.println(amigoSet.equals(amigoSet1));
-        System.out.println(amigoSet);
+        System.out.println(stringAmigoSet);
+        System.out.println(stringAmigoSetCopy);
         System.out.println("________");
-        System.out.println(amigoSet1);
     }
 }
